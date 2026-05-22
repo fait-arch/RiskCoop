@@ -164,6 +164,8 @@ export const executeChatTool = async (name: string, args: Record<string, unknown
       distribucion_mora: dashboard.moraBuckets,
       distribucion_recuperacion: dashboard.recoveryBuckets,
       destinos_mayor_riesgo: dashboard.destinationRisks,
+      nota:
+        "Las operaciones con mora actual se excluyen de la prediccion de caida futura; se tratan como gestion de mora y recuperacion.",
       muestra_prioritaria: dashboard.rows.slice(0, 10)
     };
   }

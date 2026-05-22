@@ -2,7 +2,6 @@ import type { ClientRiskRow } from "./types";
 import { estimateInstallment, riskBand } from "./riskModel";
 
 type RawRow = Record<string, unknown>;
-type TextRow = Record<string, string>;
 
 type PredictionInput = {
   cliente_id: string;
@@ -44,12 +43,15 @@ type PredictionOutput = {
   resultado_recuperacion: string;
 };
 
-const predictionApiUrl = process.env.PREDICTION_API_URL ?? "http://127.0.0.1:8000";
+type RecoveryOutput = {
+  cliente_id: string;
+  operacion_id: string;
+  probabilidad_recuperacion: number;
+  prediccion_recuperacion: number;
+  resultado_recuperacion: string;
+};
 
-const asTextRow = (row: RawRow): TextRow =>
-  Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [key, value === null || value === undefined ? "" : String(value)])
-  );
+const predictionApiUrl = process.env.PREDICTION_API_URL ?? "http://127.0.0.1:8000";
 
 const num = (value: unknown, fallback = 0) => {
   if (typeof value === "number") return Number.isFinite(value) ? value : fallback;
@@ -58,7 +60,7 @@ const num = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const clientIdOf = (row: RawRow | TextRow) => String(row.nro_socio ?? row.nro_cliente ?? row.v_ah_cliente ?? "").replace(".0", "");
+const clientIdOf = (row: RawRow) => String(row.nro_socio ?? row.nro_cliente ?? row.v_ah_cliente ?? "").replace(".0", "");
 
 const daysSince = (value: unknown) => {
   if (!value) return 999;
@@ -74,6 +76,11 @@ const daysUntilPayment = (dayValue: unknown) => {
   if (paymentDate.getTime() < today.getTime()) paymentDate.setMonth(paymentDate.getMonth() + 1);
   return Math.max(0, Math.ceil((paymentDate.getTime() - today.getTime()) / 86400000));
 };
+
+const isCurrentlyDelinquent = (operation: RawRow) =>
+  num(operation.dias_mora ?? operation.mora) > 0 ||
+  num(operation.saldo_vencido) > 0 ||
+  num(operation.nro_cuotas_atra) > 0;
 
 const movementStats = (transactions: RawRow[]) => {
   const sorted = [...transactions].sort(
@@ -180,28 +187,65 @@ export const predictRiskRows = async (
     );
   });
 
-  const response = await fetch(`${predictionApiUrl}/predict-batch`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(featureRows),
-    cache: "no-store"
-  });
+  const predictiveFeatureRows = featureRows.filter((row, index) => !isCurrentlyDelinquent(operations[index]));
+  let predictionByOperation = new Map<string, PredictionOutput>();
+  let recoveryByOperation = new Map<string, RecoveryOutput>();
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API predictiva ${response.status}: ${errorText.slice(0, 300)}`);
+  const riskRequest = predictiveFeatureRows.length
+    ? fetch(`${predictionApiUrl}/predict-batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(predictiveFeatureRows),
+        cache: "no-store"
+      })
+    : Promise.resolve<Response | null>(null);
+
+  const recoveryRequest = featureRows.length
+    ? fetch(`${predictionApiUrl}/predict-recuperacion-batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(featureRows),
+        cache: "no-store"
+      })
+    : Promise.resolve<Response | null>(null);
+
+  const [riskResponse, recoveryResponse] = await Promise.all([riskRequest, recoveryRequest]);
+
+  if (riskResponse) {
+    if (!riskResponse.ok) {
+      const errorText = await riskResponse.text();
+      throw new Error(`API predictiva ${riskResponse.status}: ${errorText.slice(0, 300)}`);
+    }
+
+    const payload = (await riskResponse.json()) as { predicciones: PredictionOutput[] };
+    predictionByOperation = new Map(payload.predicciones.map((item) => [String(item.operacion_id), item]));
   }
 
-  const payload = (await response.json()) as { predicciones: PredictionOutput[] };
-  const predictionByOperation = new Map(payload.predicciones.map((item) => [String(item.operacion_id), item]));
+  if (recoveryResponse) {
+    if (!recoveryResponse.ok) {
+      const errorText = await recoveryResponse.text();
+      throw new Error(`API recuperacion ${recoveryResponse.status}: ${errorText.slice(0, 300)}`);
+    }
+
+    const payload = (await recoveryResponse.json()) as { predicciones: RecoveryOutput[] };
+    recoveryByOperation = new Map(payload.predicciones.map((item) => [String(item.operacion_id), item]));
+  }
+
+  if (!recoveryByOperation.size && featureRows.length) {
+    throw new Error("La API de recuperacion no devolvio predicciones.");
+  }
+
+  if (predictiveFeatureRows.length && !predictionByOperation.size) {
+    throw new Error("La API de riesgo no devolvio predicciones preventivas.");
+  }
 
   return operations.map((operation) => {
     const id = clientIdOf(operation);
     const client = clientsById.get(id);
     const saving = savingsById.get(id);
-    const operationText = asTextRow(operation);
-    const savingText = asTextRow(saving ?? {});
-    const prediction = predictionByOperation.get(String(operation.nro_operacion ?? ""));
+    const operationId = String(operation.nro_operacion ?? "");
+    const prediction = predictionByOperation.get(operationId);
+    const recovery = recoveryByOperation.get(operationId);
     const saldoCapital = num(operation.saldo_capital);
     const plazo = num(operation.plazo || operation.nro_cuotas, 1);
     const montoCredito = num(operation.monto_credito);
@@ -209,12 +253,17 @@ export const predictRiskRows = async (
     const cuotasPendientes = Math.max(1, Math.round(plazo * (1 - Math.min(Math.max(avanceCuotas, 0), 0.95))));
     const cuotaEstimada = estimateInstallment(saldoCapital, cuotasPendientes, num(operation.tasa_int_vig ?? operation.tasa_int_con));
 
-    if (!prediction) {
+    const inCurrentMora = isCurrentlyDelinquent(operation);
+
+    if (!prediction && !inCurrentMora) {
       throw new Error(`La API predictiva no devolvio prediccion para la operacion ${operation.nro_operacion}`);
     }
+    if (!recovery) {
+      throw new Error(`La API de recuperacion no devolvio prediccion para la operacion ${operation.nro_operacion}`);
+    }
 
-    const probabilidadMora = prediction.probabilidad_riesgo;
-    const probabilidadRecuperacion = prediction.probabilidad_recuperacion;
+    const probabilidadMora = inCurrentMora ? 1 : prediction!.probabilidad_riesgo;
+    const probabilidadRecuperacion = recovery.probabilidad_recuperacion;
 
     return {
       clienteId: id || "Sin cliente",
@@ -224,17 +273,22 @@ export const predictRiskRows = async (
       probabilidadMora,
       probabilidadRecuperacion,
       diasHastaPago: daysUntilPayment(operation.dia_pago),
-      riesgo: riskBand(probabilidadMora),
+      riesgo: inCurrentMora ? "En mora" : riskBand(probabilidadMora),
       cuotaEstimada,
       ingresos: num(client?.ingresos_socio ?? saving?.ingresos),
       egresos: num(client?.egresos_socio ?? saving?.egresos),
       saldoCapital,
       saldoAhorro: num(saving?.saldo_disponible),
       diasMoraActual: num(operation.dias_mora ?? operation.mora),
-      explicacion: [
-        `Prediccion calculada por API: ${prediction.resultado_riesgo}.`,
-        `Recuperacion estimada por API: ${prediction.resultado_recuperacion}.`
-      ]
+      explicacion: inCurrentMora
+        ? [
+            "La operacion ya registra mora actual; no se trata como prediccion de caida en mora.",
+            `Recuperacion estimada por API: ${recovery.resultado_recuperacion}.`
+          ]
+        : [
+            `Prediccion calculada por API: ${prediction!.resultado_riesgo}.`,
+            `Recuperacion estimada por API: ${recovery.resultado_recuperacion}.`
+          ]
     };
   });
 };

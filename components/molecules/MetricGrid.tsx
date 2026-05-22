@@ -12,20 +12,20 @@ export function MetricGrid({ summary }: MetricGridProps) {
     <section id="resumen" aria-label="Metricas principales" className="metricGrid">
       <MetricCard
         icon={<ShieldAlert size={20} />}
-        label="Clientes alto riesgo"
+        label="Alto riesgo preventivo"
         value={summary.clientesAltoRiesgo.toLocaleString("es-EC")}
         tone="danger"
       />
       <MetricCard
         icon={<AlertTriangle size={20} />}
-        label="Probabilidad mora promedio"
+        label="Mora futura promedio"
         value={percent(summary.probabilidadMoraPromedio)}
         tone="danger"
       />
       <MetricCard
         icon={<Users size={20} />}
-        label="Operaciones monitoreadas"
-        value={summary.operaciones.toLocaleString("es-EC")}
+        label="Operaciones en mora"
+        value={summary.operacionesEnMora.toLocaleString("es-EC")}
       />
       <MetricCard
         icon={<TrendingUp size={20} />}

@@ -5,7 +5,8 @@ export const riskFilters = ["Todos", "Alto", "Medio", "Bajo"] as const;
 export const riskClass: Record<RiskBand, string> = {
   Alto: "riskHigh",
   Medio: "riskMedium",
-  Bajo: "riskLow"
+  Bajo: "riskLow",
+  "En mora": "riskDelinquent"
 };
 
 export const maxDaysOptions = [

@@ -108,6 +108,7 @@ export const getLocalDashboardData = async (): Promise<DashboardPayload> => {
     source: "local",
     summary: {
       operaciones: allRows.length,
+      operacionesEnMora: allRows.filter((row) => row.diasMoraActual > 0).length,
       clientesAltoRiesgo: allRows.filter((row) => row.riesgo === "Alto").length,
       probabilidadMoraPromedio: allRows.length ? probabilitySum / allRows.length : 0,
       probabilidadRecuperacionPromedio: allRows.length ? recoverySum / allRows.length : 0,

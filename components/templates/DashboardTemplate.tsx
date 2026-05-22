@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, Database, Users } from "lucide-react";
+import { AlertCircle, ShieldAlert, Users } from "lucide-react";
 import type { ClientRiskRow } from "@/lib/types";
 import { useDashboard } from "@/components/hooks/useDashboard";
 import { Sidebar } from "@/components/organisms/Sidebar";
@@ -24,6 +24,7 @@ export function DashboardTemplate() {
     maxDaysFilter, setMaxDaysFilter,
     filteredRows, riskCounts, riskTotal, destinations,
     filteredTotal, page, totalPages, setPage,
+    moraRows, moraTotal, moraPage, moraTotalPages, setMoraPage,
     loading, error
   } = useDashboard();
 
@@ -54,10 +55,6 @@ export function DashboardTemplate() {
             <p className="eyebrow">Dashboard predictivo</p>
             <h2>Riesgo, mora y recuperacion</h2>
           </div>
-          <div className="topbarBadge">
-            <Database size={16} aria-hidden />
-            Supabase activo
-          </div>
         </header>
 
         <MetricGrid summary={dashboard.summary} />
@@ -73,7 +70,7 @@ export function DashboardTemplate() {
           <div className="panelHeader">
             <div>
               <p className="eyebrow">Cartera priorizada</p>
-              <h3>Socios con probabilidad y dias de pago</h3>
+              <h3>Riesgo preventivo sin mora actual</h3>
             </div>
             <span className="panelIcon"><Users size={20} aria-hidden /></span>
           </div>
@@ -95,6 +92,27 @@ export function DashboardTemplate() {
             totalPages={totalPages}
             totalRows={filteredTotal}
             onPageChange={setPage}
+          />
+        </section>
+
+        <section className="panel moraPanel" aria-label="Operaciones en mora actual">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Gestion de mora</p>
+              <h3>Socios que ya registran mora</h3>
+            </div>
+            <span className="panelIcon"><ShieldAlert size={20} aria-hidden /></span>
+          </div>
+
+          <ClientTable
+            rows={moraRows}
+            selected={selected}
+            onSelect={setSelected}
+            onInspect={setInspected}
+            page={moraPage}
+            totalPages={moraTotalPages}
+            totalRows={moraTotal}
+            onPageChange={setMoraPage}
           />
         </section>
 

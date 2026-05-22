@@ -13,6 +13,7 @@ export function useDashboard() {
   const [destinationFilter, setDestinationFilter] = useState("Todos");
   const [maxDaysFilter, setMaxDaysFilter] = useState("Todos");
   const [page, setPage] = useState(1);
+  const [moraPage, setMoraPage] = useState(1);
   const pageSize = 10;
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function useDashboard() {
       })
       .then((payload: DashboardPayload) => {
         setDashboard(payload);
-        setSelected(payload.rows[0]);
+        setSelected(payload.rows.find((row) => row.riesgo !== "En mora") ?? payload.rows[0]);
         setError(null);
       })
       .catch((err) => {
@@ -37,6 +38,8 @@ export function useDashboard() {
   }, []);
 
   const rows = dashboard?.rows ?? [];
+  const preventiveRows = useMemo(() => rows.filter((row) => row.riesgo !== "En mora"), [rows]);
+  const currentMoraRows = useMemo(() => rows.filter((row) => row.riesgo === "En mora"), [rows]);
 
   const riskCounts = useMemo(() => {
     const buckets = dashboard?.moraBuckets ?? [];
@@ -45,9 +48,10 @@ export function useDashboard() {
     return {
       Alto:  count("61-80%") + count("81-100%"),
       Medio: count("41-60%"),
-      Bajo:  count("0-20%")  + count("21-40%")
+      Bajo:  count("0-20%")  + count("21-40%"),
+      "En mora": currentMoraRows.length
     };
-  }, [dashboard?.moraBuckets]);
+  }, [currentMoraRows.length, dashboard?.moraBuckets]);
 
   const riskTotal = riskCounts.Alto + riskCounts.Medio + riskCounts.Bajo;
 
@@ -59,7 +63,7 @@ export function useDashboard() {
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     const maxDays = maxDaysFilter === "Todos" ? null : Number(maxDaysFilter);
-    return rows
+    return preventiveRows
       .filter((row) => {
         const matchSearch =
           !q ||
@@ -71,15 +75,32 @@ export function useDashboard() {
         const matchDays  = maxDays === null || row.diasHastaPago <= maxDays;
         return matchSearch && matchRisk && matchDest && matchDays;
       });
-  }, [destinationFilter, maxDaysFilter, riskFilter, rows, search]);
+  }, [destinationFilter, maxDaysFilter, riskFilter, preventiveRows, search]);
+
+  const filteredMoraRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return currentMoraRows.filter((row) => {
+      const matchSearch =
+        !q ||
+        row.clienteId.toLowerCase().includes(q) ||
+        row.operacionId.toLowerCase().includes(q) ||
+        row.destinoOp.toLowerCase().includes(q);
+      const matchDest = destinationFilter === "Todos" || row.destinoOp === destinationFilter;
+      return matchSearch && matchDest;
+    });
+  }, [currentMoraRows, destinationFilter, search]);
 
   useEffect(() => {
     setPage(1);
+    setMoraPage(1);
   }, [destinationFilter, maxDaysFilter, riskFilter, search]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const moraTotalPages = Math.max(1, Math.ceil(filteredMoraRows.length / pageSize));
+  const currentMoraPage = Math.min(moraPage, moraTotalPages);
+  const paginatedMoraRows = filteredMoraRows.slice((currentMoraPage - 1) * pageSize, currentMoraPage * pageSize);
 
   return {
     dashboard,
@@ -91,9 +112,14 @@ export function useDashboard() {
     maxDaysFilter, setMaxDaysFilter,
     filteredRows: paginatedRows,
     filteredTotal: filteredRows.length,
+    moraRows: paginatedMoraRows,
+    moraTotal: filteredMoraRows.length,
     page: currentPage,
     totalPages,
     setPage,
+    moraPage: currentMoraPage,
+    moraTotalPages,
+    setMoraPage,
     riskCounts,
     riskTotal,
     destinations,

@@ -1,0 +1,20 @@
+{
+  "seed": 20260522,
+  "source_dir": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Synthetic_Data_Corrected",
+  "output_dir": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Synthetic_Data_Balanced",
+  "profiles": {
+    "bajo_preventivo": 190,
+    "medio_preventivo": 140,
+    "alto_preventivo": 110,
+    "mora_actual": 60
+  },
+  "model_calibration": {
+    "status": "ok",
+    "medium_rows": 66
+  },
+  "notes": [
+    "bajo_preventivo, medio_preventivo y alto_preventivo tienen dias_mora, saldo_vencido y cuotas_atrasadas en cero.",
+    "mora_actual contiene operaciones con atraso real y debe usarse en una tabla separada de cobranza.",
+    "La distribucion final del modelo puede variar porque depende de los .pkl de la API predictiva."
+  ]
+}

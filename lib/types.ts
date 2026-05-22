@@ -1,4 +1,4 @@
-export type RiskBand = "Alto" | "Medio" | "Bajo";
+export type RiskBand = "Alto" | "Medio" | "Bajo" | "En mora";
 
 export type ClientRiskRow = {
   clienteId: string;
@@ -30,6 +30,7 @@ export type DashboardPayload = {
   source: "local" | "supabase";
   summary: {
     operaciones: number;
+    operacionesEnMora: number;
     clientesAltoRiesgo: number;
     probabilidadMoraPromedio: number;
     probabilidadRecuperacionPromedio: number;

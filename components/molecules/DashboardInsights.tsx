@@ -8,6 +8,7 @@ interface DashboardInsightsProps {
     Alto: number;
     Medio: number;
     Bajo: number;
+    "En mora": number;
   };
   riskTotal: number;
   onInspect: (row: ClientRiskRow) => void;
@@ -75,6 +76,7 @@ export function DashboardInsights({ dashboard, riskCounts, riskTotal, onInspect 
           <span><i className="legendDot high" /> Alto {riskCounts.Alto.toLocaleString("es-EC")}</span>
           <span><i className="legendDot medium" /> Medio {riskCounts.Medio.toLocaleString("es-EC")}</span>
           <span><i className="legendDot low" /> Bajo {riskCounts.Bajo.toLocaleString("es-EC")}</span>
+          <span><i className="legendDot delinquent" /> En mora {riskCounts["En mora"].toLocaleString("es-EC")}</span>
         </div>
       </article>
 

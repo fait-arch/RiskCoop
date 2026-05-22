@@ -73,6 +73,9 @@ const summarizeDestinations = (rows: DashboardPayload["rows"]) => {
     .slice(0, 8);
 };
 
+const predictiveRows = (rows: DashboardPayload["rows"]) => rows.filter((row) => row.riesgo !== "En mora");
+const delinquentRows = (rows: DashboardPayload["rows"]) => rows.filter((row) => row.riesgo === "En mora");
+
 const fetchJson = async <T>(path: string): Promise<T> => {
   if (!hasSupabaseConfig) {
     throw new Error("Faltan SUPABASE_URL/SUPABASE_ANON_KEY o sus equivalentes NEXT_PUBLIC.");
@@ -164,7 +167,9 @@ export const fetchDashboardFromSupabase = async (): Promise<DashboardPayload> =>
     );
   }
 
-  const probabilitySum = allRows.reduce((sum, row) => sum + row.probabilidadMora, 0);
+  const rowsForPrediction = predictiveRows(allRows);
+  const rowsInMora = delinquentRows(allRows);
+  const probabilitySum = rowsForPrediction.reduce((sum, row) => sum + row.probabilidadMora, 0);
   const recoverySum = allRows.reduce((sum, row) => sum + row.probabilidadRecuperacion, 0);
   const capitalSum = allRows.reduce((sum, row) => sum + row.saldoCapital, 0);
 
@@ -173,14 +178,15 @@ export const fetchDashboardFromSupabase = async (): Promise<DashboardPayload> =>
     source: "supabase",
     summary: {
       operaciones: allRows.length,
-      clientesAltoRiesgo: allRows.filter((row) => row.riesgo === "Alto").length,
-      probabilidadMoraPromedio: probabilitySum / allRows.length,
+      operacionesEnMora: rowsInMora.length,
+      clientesAltoRiesgo: rowsForPrediction.filter((row) => row.riesgo === "Alto").length,
+      probabilidadMoraPromedio: rowsForPrediction.length ? probabilitySum / rowsForPrediction.length : 0,
       probabilidadRecuperacionPromedio: recoverySum / allRows.length,
       exposicionCapital: capitalSum
     },
-    moraBuckets: bucketize(allRows, "probabilidadMora"),
+    moraBuckets: bucketize(rowsForPrediction, "probabilidadMora"),
     recoveryBuckets: bucketize(allRows, "probabilidadRecuperacion"),
-    destinationRisks: summarizeDestinations(allRows),
-    rows: allRows.slice(0, 120)
+    destinationRisks: summarizeDestinations(rowsForPrediction),
+    rows: allRows
   };
 };

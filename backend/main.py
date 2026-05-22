@@ -99,6 +99,31 @@ def _predict_rows(rows: List[DatosClienteConId]):
     return results
 
 
+def _predict_recovery_rows(rows: List[DatosClienteConId]):
+    df = _features_frame(rows)
+    recuperacion_probs = modelo_recuperacion.predict_proba(df)[:, 1]
+
+    results = []
+    for index, row in enumerate(rows):
+        prob_recuperacion = float(recuperacion_probs[index])
+        recuperacion_pred = int(prob_recuperacion >= umbral_recuperacion)
+        results.append(
+            {
+                "cliente_id": row.cliente_id,
+                "operacion_id": row.operacion_id,
+                "probabilidad_recuperacion": round(prob_recuperacion, 4),
+                "umbral_recuperacion": umbral_recuperacion,
+                "prediccion_recuperacion": recuperacion_pred,
+                "resultado_recuperacion": (
+                    "Alta probabilidad de recuperacion"
+                    if recuperacion_pred == 1
+                    else "Baja probabilidad de recuperacion"
+                ),
+            }
+        )
+    return results
+
+
 @app.get("/")
 def inicio():
     return {
@@ -152,3 +177,8 @@ def predecir(datos: DatosClienteConId):
 @app.post("/predict-batch")
 def predecir_lote(datos: List[DatosClienteConId]):
     return {"predicciones": _predict_rows(datos)}
+
+
+@app.post("/predict-recuperacion-batch")
+def predecir_recuperacion_lote(datos: List[DatosClienteConId]):
+    return {"predicciones": _predict_recovery_rows(datos)}
