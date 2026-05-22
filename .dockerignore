@@ -1,0 +1,14 @@
+node_modules
+.next
+dist
+build
+venv
+__pycache__
+.DS_Store
+*.pyc
+*.pyo
+*.pyd
+*.log
+env
+npm-debug.log
+package-lock.json
