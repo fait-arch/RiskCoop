@@ -7,17 +7,32 @@ import { riskFilters } from "@/lib/constants";
 export function useDashboard() {
   const [dashboard, setDashboard] = useState<DashboardPayload | null>(null);
   const [selected, setSelected] = useState<ClientRiskRow | undefined>();
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<(typeof riskFilters)[number]>("Todos");
   const [destinationFilter, setDestinationFilter] = useState("Todos");
   const [maxDaysFilter, setMaxDaysFilter] = useState("Todos");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     fetch("/api/dashboard")
-      .then((r) => r.json())
+      .then(async (r) => {
+        const payload = await r.json();
+        if (!r.ok) {
+          throw new Error(payload?.detail || payload?.error || "No se pudo cargar Supabase.");
+        }
+        return payload;
+      })
       .then((payload: DashboardPayload) => {
         setDashboard(payload);
         setSelected(payload.rows[0]);
+        setError(null);
+      })
+      .catch((err) => {
+        setDashboard(null);
+        setSelected(undefined);
+        setError(err instanceof Error ? err.message : String(err));
       });
   }, []);
 
@@ -28,8 +43,8 @@ export function useDashboard() {
     const count = (label: string) =>
       buckets.find((b) => b.label === label)?.count ?? 0;
     return {
-      Alto:  count("81-100%"),
-      Medio: count("41-60%") + count("61-80%"),
+      Alto:  count("61-80%") + count("81-100%"),
+      Medio: count("41-60%"),
       Bajo:  count("0-20%")  + count("21-40%")
     };
   }, [dashboard?.moraBuckets]);
@@ -55,9 +70,16 @@ export function useDashboard() {
         const matchDest  = destinationFilter === "Todos" || row.destinoOp === destinationFilter;
         const matchDays  = maxDays === null || row.diasHastaPago <= maxDays;
         return matchSearch && matchRisk && matchDest && matchDays;
-      })
-      .slice(0, 40);
+      });
   }, [destinationFilter, maxDaysFilter, riskFilter, rows, search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [destinationFilter, maxDaysFilter, riskFilter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return {
     dashboard,
@@ -67,10 +89,15 @@ export function useDashboard() {
     riskFilter, setRiskFilter,
     destinationFilter, setDestinationFilter,
     maxDaysFilter, setMaxDaysFilter,
-    filteredRows,
+    filteredRows: paginatedRows,
+    filteredTotal: filteredRows.length,
+    page: currentPage,
+    totalPages,
+    setPage,
     riskCounts,
     riskTotal,
     destinations,
-    loading: !dashboard
+    loading: !dashboard && !error,
+    error
   };
 }

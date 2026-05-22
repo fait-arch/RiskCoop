@@ -28,20 +28,20 @@ export function Simulator({ selected }: SimulatorProps) {
         <strong>{selected ? `Socio ${selected.clienteId}` : "Escenario manual"}</strong>
         <span>
           {selected
-            ? `Operación ${selected.operacionId} · pago en ${selected.diasHastaPago} días`
+            ? `Operacion ${selected.operacionId} - pago en ${selected.diasHastaPago} dias`
             : "Ajusta las variables y presiona recalcular"}
         </span>
       </div>
 
       <div className="formGrid">
-        <Field label="Número de cuotas" value={form.numeroCuotas}   onChange={(v) => update("numeroCuotas", v)} />
-        <Field label="Pago por cuota"   value={form.pagoPorCuota}   onChange={(v) => update("pagoPorCuota", v)} />
-        <Field label="Ingresos socio"   value={form.ingresos}       onChange={(v) => update("ingresos", v)} />
-        <Field label="Egresos socio"    value={form.egresos}        onChange={(v) => update("egresos", v)} />
-        <Field label="Saldo disponible" value={form.saldoAhorro}    onChange={(v) => update("saldoAhorro", v)} />
-        <Field label="Saldo capital"    value={form.saldoCapital}   onChange={(v) => update("saldoCapital", v)} />
-        <Field label="Días hasta pago"  value={form.diasHastaPago}  onChange={(v) => update("diasHastaPago", v)} />
-        <Field label="Días mora actual" value={form.diasMoraActual} onChange={(v) => update("diasMoraActual", v)} />
+        <Field label="Numero de cuotas" value={form.numeroCuotas} onChange={(v) => update("numeroCuotas", v)} />
+        <Field label="Pago por cuota" value={form.pagoPorCuota} onChange={(v) => update("pagoPorCuota", v)} />
+        <Field label="Ingresos socio" value={form.ingresos} onChange={(v) => update("ingresos", v)} />
+        <Field label="Egresos socio" value={form.egresos} onChange={(v) => update("egresos", v)} />
+        <Field label="Saldo disponible" value={form.saldoAhorro} onChange={(v) => update("saldoAhorro", v)} />
+        <Field label="Saldo capital" value={form.saldoCapital} onChange={(v) => update("saldoCapital", v)} />
+        <Field label="Dias hasta pago" value={form.diasHastaPago} onChange={(v) => update("diasHastaPago", v)} />
+        <Field label="Dias mora actual" value={form.diasMoraActual} onChange={(v) => update("diasMoraActual", v)} />
       </div>
 
       <PrimaryButton onClick={simulate} disabled={loading} icon={<RefreshCcw size={18} />}>
@@ -55,7 +55,7 @@ export function Simulator({ selected }: SimulatorProps) {
             <strong>{`${Math.round(result.probabilidadMora * 100)}%`}</strong>
           </div>
           <Pill risk={result.riesgo} />
-          <p>{result.razones.join(" · ")}</p>
+          <p>{result.razones.join(" - ")}</p>
         </div>
       )}
     </div>

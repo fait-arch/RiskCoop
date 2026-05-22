@@ -9,10 +9,10 @@ export const riskClass: Record<RiskBand, string> = {
 };
 
 export const maxDaysOptions = [
-  { value: "Todos", label: "Todos los días" },
-  { value: "7", label: "0 – 7 días" },
-  { value: "15", label: "0 – 15 días" },
-  { value: "30", label: "0 – 30 días" }
+  { value: "Todos", label: "Todos los dias" },
+  { value: "7", label: "0 - 7 dias" },
+  { value: "15", label: "0 - 15 dias" },
+  { value: "30", label: "0 - 30 dias" }
 ] as const;
 
 export const currency = new Intl.NumberFormat("es-EC", {

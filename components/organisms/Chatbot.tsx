@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareText, Send } from "lucide-react";
+import { MessageSquareText, RotateCcw, Send } from "lucide-react";
 import { useChat } from "@/components/hooks/useChat";
 import type { ClientRiskRow } from "@/lib/types";
 
@@ -9,7 +9,7 @@ interface ChatbotProps {
 }
 
 export function Chatbot({ selected }: ChatbotProps) {
-  const { messages, input, setInput, loading, send } = useChat(selected);
+  const { messages, input, setInput, loading, send, clear } = useChat(selected);
 
   return (
     <div id="asistente" className="panel chatPanel">
@@ -18,9 +18,14 @@ export function Chatbot({ selected }: ChatbotProps) {
           <p className="eyebrow">Asistente IA</p>
           <h3>Consultas a Supabase y modelo</h3>
         </div>
-        <span className="panelIcon">
-          <MessageSquareText size={20} />
-        </span>
+        <div className="panelActions">
+          <button className="iconButton" type="button" onClick={clear} aria-label="Borrar chat" title="Borrar chat">
+            <RotateCcw size={17} />
+          </button>
+          <span className="panelIcon">
+            <MessageSquareText size={20} />
+          </span>
+        </div>
       </div>
 
       <div className="messages" aria-live="polite" aria-label="Mensajes del asistente">
@@ -40,7 +45,7 @@ export function Chatbot({ selected }: ChatbotProps) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ej: ¿qué destino tiene más mora?"
+          placeholder="Ej: que destino tiene mas mora?"
           aria-label="Mensaje al asistente"
         />
         <button type="submit" aria-label="Enviar mensaje">

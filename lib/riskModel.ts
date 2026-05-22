@@ -72,8 +72,8 @@ export const scoreSimulation = (input: SimulationInput): SimulationOutput => {
 export const buildRiskRow = (credit: Record<string, string>, saving?: Record<string, string>): ClientRiskRow => {
   const montoCredito = safeNumber(credit.monto_credito);
   const saldoCapital = safeNumber(credit.saldo_capital);
-  const ingresos = safeNumber(credit.ingresos_socio || saving?.ingresos);
-  const egresos = safeNumber(credit.egresos_socio || saving?.egresos);
+  const ingresos = safeNumber(credit.ingresos_socio || saving?.ingresos_socio || saving?.ingresos);
+  const egresos = safeNumber(credit.egresos_socio || saving?.egresos_socio || saving?.egresos);
   const nroCuotas = safeNumber(credit.nro_cuotas, 1);
   const plazo = safeNumber(credit.plazo, nroCuotas);
   const diasMoraActual = safeNumber(credit.dias_mora);
@@ -104,8 +104,8 @@ export const buildRiskRow = (credit: Record<string, string>, saving?: Record<str
   });
 
   return {
-    clienteId: credit.nro_cliente?.trim() || "Sin cliente",
-    operacionId: credit.nro_operacion?.trim() || "Sin operacion",
+    clienteId: (credit.nro_cliente || credit.nro_socio)?.trim() || "Sin cliente",
+    operacionId: (credit.nro_operacion || credit.nro_credito)?.trim() || "Sin operacion",
     destinoOp: credit.destino_op?.trim() || "Sin destino",
     actividad: credit.actividad_socio?.trim() || "Actividad no registrada",
     probabilidadMora: simulation.probabilidadMora,

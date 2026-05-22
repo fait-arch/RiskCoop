@@ -1,17 +1,20 @@
 "use client";
 
-import { BarChart3, Activity, Users } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, Database, Users } from "lucide-react";
+import type { ClientRiskRow } from "@/lib/types";
 import { useDashboard } from "@/components/hooks/useDashboard";
 import { Sidebar } from "@/components/organisms/Sidebar";
 import { Simulator } from "@/components/organisms/Simulator";
 import { Chatbot } from "@/components/organisms/Chatbot";
 import { MetricGrid } from "@/components/molecules/MetricGrid";
-import { RiskBarsGroup } from "@/components/molecules/RiskBarsGroup";
-import { DestinationList } from "@/components/molecules/DestinationList";
+import { DashboardInsights } from "@/components/molecules/DashboardInsights";
 import { TableControls } from "@/components/molecules/TableControls";
 import { ClientTable } from "@/components/molecules/ClientTable";
+import { ClientDetailModal } from "@/components/molecules/ClientDetailModal";
 
 export function DashboardTemplate() {
+  const [inspected, setInspected] = useState<ClientRiskRow | undefined>();
   const {
     dashboard,
     selected, setSelected,
@@ -20,56 +23,57 @@ export function DashboardTemplate() {
     destinationFilter, setDestinationFilter,
     maxDaysFilter, setMaxDaysFilter,
     filteredRows, riskCounts, riskTotal, destinations,
-    loading
+    filteredTotal, page, totalPages, setPage,
+    loading, error
   } = useDashboard();
 
   if (loading) {
     return <main className="loading">Cargando riesgo cooperativo...</main>;
   }
 
+  if (error || !dashboard) {
+    return (
+      <main className="errorState">
+        <div className="errorCard">
+          <span className="errorIcon"><AlertCircle size={24} aria-hidden /></span>
+          <p className="eyebrow">Conexion Supabase</p>
+          <h2>No se pudo cargar el dashboard</h2>
+          <p>{error ?? "La respuesta de Supabase no contiene datos disponibles."}</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="pageShell">
-      <Sidebar source={dashboard!.source} />
+      <Sidebar source={dashboard.source} />
 
       <section className="content">
         <header className="topbar">
           <div>
             <p className="eyebrow">Dashboard predictivo</p>
-            <h2>Alertas de mora y recuperación</h2>
+            <h2>Riesgo, mora y recuperacion</h2>
+          </div>
+          <div className="topbarBadge">
+            <Database size={16} aria-hidden />
+            Supabase activo
           </div>
         </header>
 
-        <MetricGrid summary={dashboard!.summary} />
+        <MetricGrid summary={dashboard.summary} />
 
-        <section className="mainGrid" aria-label="Distribución de riesgo">
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <p className="eyebrow">Distribución</p>
-                <h3>Socios por nivel de riesgo</h3>
-              </div>
-              <span className="panelIcon"><BarChart3 size={20} aria-hidden /></span>
-            </div>
-            <RiskBarsGroup alto={riskCounts.Alto} medio={riskCounts.Medio} bajo={riskCounts.Bajo} total={riskTotal} />
-          </div>
-
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <p className="eyebrow">Destino operación</p>
-                <h3>Más propensos a mora</h3>
-              </div>
-              <span className="panelIcon"><Activity size={20} aria-hidden /></span>
-            </div>
-            <DestinationList destinations={dashboard!.destinationRisks} />
-          </div>
-        </section>
+        <DashboardInsights
+          dashboard={dashboard}
+          riskCounts={riskCounts}
+          riskTotal={riskTotal}
+          onInspect={setInspected}
+        />
 
         <section id="socios" className="panel" aria-label="Cartera priorizada">
           <div className="panelHeader">
             <div>
               <p className="eyebrow">Cartera priorizada</p>
-              <h3>Socios con probabilidad y días de pago</h3>
+              <h3>Socios con probabilidad y dias de pago</h3>
             </div>
             <span className="panelIcon"><Users size={20} aria-hidden /></span>
           </div>
@@ -82,7 +86,16 @@ export function DashboardTemplate() {
             maxDaysFilter={maxDaysFilter} onMaxDaysFilterChange={setMaxDaysFilter}
           />
 
-          <ClientTable rows={filteredRows} selected={selected} onSelect={setSelected} />
+          <ClientTable
+            rows={filteredRows}
+            selected={selected}
+            onSelect={setSelected}
+            onInspect={setInspected}
+            page={page}
+            totalPages={totalPages}
+            totalRows={filteredTotal}
+            onPageChange={setPage}
+          />
         </section>
 
         <section className="lowerGrid">
@@ -90,6 +103,8 @@ export function DashboardTemplate() {
           <Chatbot selected={selected} />
         </section>
       </section>
+
+      <ClientDetailModal row={inspected} onClose={() => setInspected(undefined)} />
     </main>
   );
 }

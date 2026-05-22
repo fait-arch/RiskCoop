@@ -22,14 +22,14 @@ export function TableControls({
 }: TableControlsProps) {
   return (
     <div className="tableControls">
-      <SearchBox value={search} onChange={onSearchChange} placeholder="Buscar socio, operación o destino" />
+      <SearchBox value={search} onChange={onSearchChange} placeholder="Buscar socio, operacion o destino" />
       <SelectFilter value={riskFilter} onChange={onRiskFilterChange} label="Filtrar por riesgo" showIcon>
         {riskFilters.map((r) => <option key={r} value={r}>{r}</option>)}
       </SelectFilter>
-      <SelectFilter value={destinationFilter} onChange={onDestinationFilterChange} label="Filtrar por destino de operación">
+      <SelectFilter value={destinationFilter} onChange={onDestinationFilterChange} label="Filtrar por destino de operacion">
         {destinations.map((d) => <option key={d} value={d}>{d}</option>)}
       </SelectFilter>
-      <SelectFilter value={maxDaysFilter} onChange={onMaxDaysFilterChange} label="Filtrar por días hasta pago">
+      <SelectFilter value={maxDaysFilter} onChange={onMaxDaysFilterChange} label="Filtrar por dias hasta pago">
         {maxDaysOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </SelectFilter>
     </div>

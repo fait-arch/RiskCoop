@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLocalDashboardData } from "@/lib/localData";
-import { fetchSupabaseContext } from "@/lib/supabaseRest";
+import { fetchDashboardFromSupabase, fetchSupabaseContext } from "@/lib/supabaseRest";
 
 export async function POST(request: NextRequest) {
   const { messages } = await request.json();
   const latest = messages?.at(-1)?.content ?? "";
 
-  const dashboard = await getLocalDashboardData();
+  let dashboard;
+  try {
+    dashboard = await fetchDashboardFromSupabase();
+  } catch (error) {
+    return NextResponse.json(
+      {
+        reply: `No pude cargar el contexto desde Supabase: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      },
+      { status: 502 }
+    );
+  }
   const supabaseContext = await fetchSupabaseContext(latest);
 
   const compactContext = {

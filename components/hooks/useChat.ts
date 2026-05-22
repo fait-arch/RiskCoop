@@ -4,14 +4,21 @@ import { FormEvent, useState } from "react";
 import type { ClientRiskRow } from "@/lib/types";
 
 export function useChat(selected?: ClientRiskRow) {
-  const [messages, setMessages] = useState([
+  const initialMessages = [
     {
       role: "assistant",
       content: "Listo para consultar Supabase, el modelo predictivo o explicar factores de mora.",
     },
-  ]);
+  ];
+  const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const clear = () => {
+    setMessages(initialMessages);
+    setInput("");
+    setLoading(false);
+  };
 
   const send = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -50,5 +57,5 @@ export function useChat(selected?: ClientRiskRow) {
     }
   };
 
-  return { messages, input, setInput, loading, send };
+  return { messages, input, setInput, loading, send, clear };
 }

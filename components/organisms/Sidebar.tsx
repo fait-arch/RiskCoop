@@ -6,7 +6,7 @@ interface SidebarProps {
 
 export function Sidebar({ source }: SidebarProps) {
   return (
-    <aside className="sidebar" aria-label="Navegación principal">
+    <aside className="sidebar" aria-label="Navegacion principal">
       <div className="brandBlock">
         <div className="brandMark">
           <Gauge size={22} />

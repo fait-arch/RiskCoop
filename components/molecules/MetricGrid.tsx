@@ -1,4 +1,4 @@
-import { Users, AlertTriangle, TrendingUp, CircleDollarSign } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, CircleDollarSign, ShieldAlert } from "lucide-react";
 import { MetricCard } from "@/components/atoms/MetricCard";
 import { percent, currency } from "@/lib/constants";
 import type { DashboardPayload } from "@/lib/types";
@@ -9,11 +9,12 @@ interface MetricGridProps {
 
 export function MetricGrid({ summary }: MetricGridProps) {
   return (
-    <section id="resumen" aria-label="Métricas principales" className="metricGrid">
+    <section id="resumen" aria-label="Metricas principales" className="metricGrid">
       <MetricCard
-        icon={<Users size={20} />}
-        label="Operaciones monitoreadas"
-        value={summary.operaciones.toLocaleString("es-EC")}
+        icon={<ShieldAlert size={20} />}
+        label="Clientes alto riesgo"
+        value={summary.clientesAltoRiesgo.toLocaleString("es-EC")}
+        tone="danger"
       />
       <MetricCard
         icon={<AlertTriangle size={20} />}
@@ -22,14 +23,19 @@ export function MetricGrid({ summary }: MetricGridProps) {
         tone="danger"
       />
       <MetricCard
+        icon={<Users size={20} />}
+        label="Operaciones monitoreadas"
+        value={summary.operaciones.toLocaleString("es-EC")}
+      />
+      <MetricCard
         icon={<TrendingUp size={20} />}
-        label="Recuperación promedio"
+        label="Recuperacion promedio"
         value={percent(summary.probabilidadRecuperacionPromedio)}
         tone="success"
       />
       <MetricCard
         icon={<CircleDollarSign size={20} />}
-        label="Exposición capital"
+        label="Exposicion capital"
         value={currency.format(summary.exposicionCapital)}
         tone="warning"
       />
