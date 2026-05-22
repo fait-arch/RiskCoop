@@ -1,0 +1,54 @@
+{
+  "input_files": [
+    "DataSabanaCred11Mayo2026.csv",
+    "DataSabanaCred18Mayo2026.csv",
+    "DataSabanaCred1Mayo2026.csv"
+  ],
+  "input_rows_by_file": {
+    "DataSabanaCred11Mayo2026.csv": 35316,
+    "DataSabanaCred18Mayo2026.csv": 35343,
+    "DataSabanaCred1Mayo2026.csv": 35485
+  },
+  "input_rows_total": 106144,
+  "exact_duplicate_rows": 0,
+  "duplicated_operations_removed": 70278,
+  "output_rows": 35866,
+  "output_columns": 56,
+  "dedupe_rule": "nro_operacion: conserva la fila con qy_fechaproc mas reciente",
+  "invalid_dates_after_cleaning": {
+    "qy_fechaproc": 0,
+    "fecha_concesion_op": 0,
+    "fecha_fin_op": 0,
+    "fecha_ult_pag": 0,
+    "fecha_garantias": 0,
+    "fech_nacimiento": 0,
+    "fech_ult_viv": 0,
+    "fech_utl_tra": 0
+  },
+  "invalid_numbers_after_cleaning": {
+    "monto_credito": 0,
+    "saldo_capital": 0,
+    "saldo_por_vencer": 0,
+    "saldo_no_devenga": 0,
+    "saldo_vencido": 0,
+    "int_normal": 0,
+    "int_devengado": 0,
+    "int_vencido": 0,
+    "int_resolucion": 0,
+    "int_castigado": 0,
+    "int_mora": 0,
+    "tasa_int_con": 0,
+    "tasa_int_vig": 0,
+    "valgarantias": 0,
+    "ingresos_socio": 0,
+    "egresos_socio": 0,
+    "val_capd": 0,
+    "val_intd": 0,
+    "val_morad": 0,
+    "val_notd": 0,
+    "val_gnot2d": 0,
+    "val_intresd": 0
+  },
+  "output_csv": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Cleaned_Data_1\\Limpio_SabanaCred_Unificado_Mayo2026.csv",
+  "schema_sql": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Cleaned_Data_1\\schema_creditos_supabase.sql"
+}

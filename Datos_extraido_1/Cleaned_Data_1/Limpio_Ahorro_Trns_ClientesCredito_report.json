@@ -1,0 +1,66 @@
+{
+  "credit_clients_unique": 33215,
+  "savings": {
+    "input_rows": 350502,
+    "output_rows": 106780,
+    "removed_rows_without_credit_client": 243722,
+    "rows_repaired_for_unquoted_thousands": 0,
+    "unique_clients_output": 31971,
+    "invalid_dates": {
+      "fecha_proceso": 0,
+      "fecha_aper": 0,
+      "fecha_ultmov": 0,
+      "fecha_ult_capi": 0,
+      "v_fecha_nac": 1016,
+      "fecha_actualizacion": 1518
+    },
+    "invalid_numbers": {
+      "saldo_disponible": 0,
+      "monto_bloq": 0,
+      "ult_tasa_int": 0,
+      "tiene_bloqueos": 0,
+      "bloqueo_encaje": 0,
+      "v24h": 0,
+      "val_de_creditos": 0,
+      "val_de_debitos": 0,
+      "certificadosvalor": 993,
+      "ingresos": 23,
+      "egresos": 0,
+      "v12h": 1519,
+      "v48h": 32,
+      "v72h_difer": 0,
+      "int_hoy": 0,
+      "int_acumulado": 0,
+      "saldo_int_decim": 0,
+      "v_ah_cliente": 0,
+      "v_ah_cuenta": 0,
+      "oficina_cta": 0,
+      "prod_bancario": 0,
+      "cooplinea": 1016,
+      "tarjetas": 23,
+      "credito": 0,
+      "edad": 993,
+      "menor_edad": 0
+    },
+    "output_csv": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Cleaned_Data_1\\Limpio_SabanaAhorro_Unificado_Trimestre_ClientesCredito.csv"
+  },
+  "transactions": {
+    "input_rows": 840153,
+    "output_rows": 387451,
+    "removed_rows_without_credit_client": 452702,
+    "unique_clients_output": 27022,
+    "invalid_dates": {
+      "fecha_trn": 0
+    },
+    "invalid_numbers": {
+      "valor_trn": 0,
+      "saldo_contable": 0,
+      "saldo_disponible": 0,
+      "cuenta": 0,
+      "cliente": 0,
+      "causal_trn": 0
+    },
+    "output_csv": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Cleaned_Data_1\\Limpio_Trns_Unificado_Trimestre_ClientesCredito.csv"
+  },
+  "schema_sql": "C:\\Users\\Oscar\\OneDrive\\Escritorio\\OSCAR\\UNI\\RiskCoop\\Datos_extraido_1\\Cleaned_Data_1\\schema_ahorro_transacciones_supabase.sql"
+}
