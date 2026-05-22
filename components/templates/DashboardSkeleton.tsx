@@ -158,7 +158,9 @@ export function DashboardSkeleton() {
                 </div>
               ))}
             </div>
-            <Skeleton variant="rectangular" height={40} borderRadius="9999px" style={{ marginTop: 16 }} />
+            <div style={{ marginTop: 16 }}>
+            <Skeleton variant="rectangular" height={40} borderRadius="9999px" />
+          </div>
           </div>
 
           <div className="panel chatPanel">

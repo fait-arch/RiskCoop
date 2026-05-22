@@ -3,7 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "RiskCoop | Alerta temprana de mora",
-  description: "Dashboard predictivo para riesgo crediticio cooperativo"
+  description: "Dashboard predictivo para riesgo crediticio cooperativo",
+  appleWebApp: {
+    capable: true,
+    title: "RiskCoop",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport = {
@@ -11,6 +16,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#1a1a1a',
 };
 
 export default function RootLayout({
