@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: riskcoop-dashboard:latest
+    env_file:
+      - .env.production
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Datos_extraido_1:/app/Datos_extraido_1:ro
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:3000', res => { process.exit(res.statusCode < 400 ? 0 : 1); }).on('error', () => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
