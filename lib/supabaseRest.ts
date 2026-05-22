@@ -1,5 +1,5 @@
 import { DashboardPayload } from "./types";
-import { buildRiskRow } from "./riskModel";
+import { predictRiskRows } from "./predictionApi";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
 const supabaseAnonKey =
@@ -30,11 +30,6 @@ const supabaseHeaders = {
   apikey: supabaseAnonKey ?? "",
   Authorization: `Bearer ${supabaseAnonKey ?? ""}`
 };
-
-const toTextRecord = (row: Record<string, unknown>): Record<string, string> =>
-  Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [key, value === null || value === undefined ? "" : String(value)])
-  );
 
 const bucketize = (
   rows: DashboardPayload["rows"],
@@ -125,20 +120,8 @@ const fetchFirstAvailable = async (
   return { table: "", rows: [] };
 };
 
-const fetchAggregatedPayload = async (): Promise<DashboardPayload | null> => {
-  try {
-    const rows = await fetchJson<{ payload?: DashboardPayload }[]>("risk_dashboard_payload?select=payload&limit=1");
-    return rows?.[0]?.payload ? { ...rows[0].payload, source: "supabase" } : null;
-  } catch {
-    return null;
-  }
-};
-
 export const fetchDashboardFromSupabase = async (): Promise<DashboardPayload> => {
-  const aggregated = await fetchAggregatedPayload();
-  if (aggregated) return aggregated;
-
-  const [creditSource, savingSource, clientSource] = await Promise.all([
+  const [creditSource, savingSource, clientSource, transactionSource] = await Promise.all([
     fetchFirstAvailable(
       [
         "operaciones_credito",
@@ -159,36 +142,25 @@ export const fetchDashboardFromSupabase = async (): Promise<DashboardPayload> =>
       5000,
       false
     ),
-    fetchFirstAvailable(["clientes", "synthetic_clientes", "socios"], 5000, false)
+    fetchFirstAvailable(["clientes", "synthetic_clientes", "socios"], 5000, false),
+    fetchFirstAvailable(["transacciones", "transacciones_clientes_credito", "synthetic_transacciones"], 10000, false)
   ]);
 
-  const savingsByClient = new Map(
-    savingSource.rows.map((saving) => [
-      String(saving.v_ah_cliente ?? saving.nro_socio ?? saving.nro_cliente ?? "").replace(".0", ""),
-      toTextRecord(saving)
-    ])
-  );
-  const clientsById = new Map(
-    clientSource.rows.map((client) => [
-      String(client.nro_socio ?? client.nro_cliente ?? client.id ?? "").replace(".0", ""),
-      toTextRecord(client)
-    ])
-  );
-
   const hasOperationStatus = creditSource.rows.some((credit) => "estado_op" in credit);
-  const allRows = creditSource.rows
-    .filter((credit) => !hasOperationStatus || String(credit.estado_op ?? "").toUpperCase().includes("VIGENTE"))
-    .map((credit) => {
-      const clientId = String(credit.nro_cliente ?? credit.nro_socio ?? "").replace(".0", "");
-      const clientRecord = clientsById.get(clientId) ?? {};
-      const savingRecord = savingsByClient.get(clientId) ?? {};
-      return buildRiskRow(toTextRecord({ ...clientRecord, ...credit }), { ...clientRecord, ...savingRecord });
-    })
+  const activeCredits = creditSource.rows.filter(
+    (credit) => !hasOperationStatus || String(credit.estado_op ?? "").toUpperCase().includes("VIGENTE")
+  );
+  const allRows = (await predictRiskRows(
+    activeCredits,
+    clientSource.rows,
+    savingSource.rows,
+    transactionSource.rows
+  ))
     .sort((a, b) => b.probabilidadMora - a.probabilidadMora);
 
   if (!allRows.length) {
     throw new Error(
-      `Supabase respondio, pero no hay filas visibles en ${creditSource.table} para construir el dashboard. Revisa RLS/policies o usa SUPABASE_SERVICE_ROLE_KEY en el servidor.`
+      `Supabase respondio, pero no hay filas visibles en ${creditSource.table} para construir el dashboard.`
     );
   }
 
