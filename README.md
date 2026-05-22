@@ -13,7 +13,7 @@ Abrir `http://127.0.0.1:3005`.
 
 ## Variables de entorno
 
-Copiar `.env.example` a `.env.local` y configurar:
+Copiar `.env.example` a `.envs` y configurar:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`

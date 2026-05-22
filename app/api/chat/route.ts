@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json({
       reply:
-        "GEMINI_API_KEY no está configurada. Agrégala en .env.local como GEMINI_API_KEY=tu_clave.",
+        "GEMINI_API_KEY no está configurada. Agrégala en .env como GEMINI_API_KEY=tu_clave.",
     });
   }
 
