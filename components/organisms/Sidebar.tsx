@@ -1,12 +1,12 @@
-import { Activity, Bot, Calculator, Gauge, Shield, Users } from "lucide-react";
+import { Activity, Bot, Calculator, Gauge, Users } from "lucide-react";
 
 interface SidebarProps {
   source: "local" | "supabase";
 }
 
-export function Sidebar({ source }: SidebarProps) {
+export function Sidebar({ source: _source }: SidebarProps) {
   return (
-    <aside className="sidebar" aria-label="Navegacion principal">
+    <header className="sidebar" aria-label="Navegacion principal">
       <div className="brandBlock">
         <div className="brandMark">
           <Gauge size={22} />
@@ -33,14 +33,6 @@ export function Sidebar({ source }: SidebarProps) {
         </a>
       </nav>
 
-      <div className="modelNote">
-        <p>Ventana base</p>
-        <strong>Mayo 2026</strong>
-        <span className="sourceTag">
-          <Shield size={10} aria-hidden />
-          {source === "supabase" ? "Supabase" : "CSV"}
-        </span>
-      </div>
-    </aside>
+    </header>
   );
 }

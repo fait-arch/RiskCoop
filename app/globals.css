@@ -101,8 +101,8 @@ button {
   min-height: calc(100vh - 36px);
   margin: 18px auto;
   display: grid;
-  grid-template-columns: 196px minmax(0, 1fr);
-  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
   background: rgba(12, 18, 14, 0.96);
@@ -110,22 +110,27 @@ button {
 }
 
 .sidebar {
-  min-height: calc(100vh - 36px);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: auto;
   display: flex;
-  flex-direction: column;
-  padding: 20px 12px;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
   color: rgba(255, 255, 255, 0.78);
   background:
-    linear-gradient(180deg, rgba(9, 16, 12, 0.98), rgba(13, 28, 18, 0.98)),
+    linear-gradient(90deg, rgba(9, 16, 12, 0.98), rgba(13, 28, 18, 0.98)),
     var(--dark);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .brandBlock {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 6px 24px;
+  padding: 0;
+  flex: 0 0 auto;
 }
 
 .brandMark {
@@ -148,8 +153,11 @@ button {
 }
 
 .navStack {
-  display: grid;
+  display: flex;
   gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .navItem {
@@ -172,13 +180,17 @@ button {
 }
 
 .modelNote {
-  margin-top: auto;
-  padding: 16px 10px 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding: 0;
+  border-top: 0;
+  flex: 0 0 auto;
 }
 
 .modelNote p {
-  margin: 0 0 2px;
+  margin: 0;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.58);
   text-transform: uppercase;
@@ -189,7 +201,7 @@ button {
   display: block;
   color: var(--brand-white);
   font-size: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .sourceTag {
@@ -206,7 +218,7 @@ button {
 
 .content {
   min-width: 0;
-  padding: 20px;
+  padding: 28px 20px 20px;
   background:
     linear-gradient(180deg, rgba(18, 26, 22, 0.98), rgba(10, 16, 12, 0.98)),
     var(--dark-2);
@@ -1323,27 +1335,14 @@ tbody tr:last-child td {
     border-radius: 0;
   }
 
-  .sidebar {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    min-height: auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    overflow-x: auto;
-  }
+  .sidebar { overflow-x: auto; }
 
   .brandBlock {
     padding: 0;
     flex: 0 0 auto;
   }
 
-  .navStack {
-    display: flex;
-    flex: 1 0 auto;
-  }
+  .navStack { flex: 1 0 auto; justify-content: flex-start; }
 
   .navItem {
     white-space: nowrap;
